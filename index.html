@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 相關企業資本支出追蹤</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Microsoft JhengHei', sans-serif; background: #0f0c29; color: #fff; min-height: 100vh; padding: 20px; }
+.header { background: linear-gradient(135deg, #667eea, #764ba2); padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; }
+.header h1 { font-size: 2rem; margin-bottom: 10px; }
+.header p { color: rgba(255,255,255,0.8); }
+.container { max-width: 1200px; margin: 0 auto; }
+.controls { text-align: center; margin-bottom: 30px; }
+select { padding: 10px 20px; font-size: 1rem; border-radius: 10px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+.chart-container { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; margin-bottom: 30px; }
+.chart-container h2 { margin-bottom: 20px; color: #ffd700; }
+canvas { max-height: 400px; }
+.data-table { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+th { background: rgba(102,126,234,0.5); color: #fff; }
+.positive { color: #00d26a; }
+.negative { color: #e94560; }
+.footer { text-align: center; margin-top: 40px; color: rgba(255,255,255,0.5); }
+</style>
+</head>
+<body>
+<div class="header">
+<h1>💰 AI 相關企業資本支出 (CapEx) 追蹤</h1>
+<p>追蹤輝達、Google、Tesla、美光、台積電等主要 AI 供應鏈資本支出變化</p>
+<p>更新時間: 2026-05-07 13:52</p>
+</div>
+
+<div class="container">
+<div class="controls">
+<select id="stockSelect" onchange="updateChart()">
+<option value="NVDA">輝達</option><option value="GOOGL">Google</option><option value="TSLA">Tesla</option><option value="MU">美光</option><option value="2330.TW">台積電</option><option value="2344.TW">華邦電</option><option value="3714.TW">日月光</option>
+</select>
+</div>
+
+<div class="chart-container">
+<h2>📈 資本支出趨勢圖</h2>
+<canvas id="capexChart"></canvas>
+</div>
+
+<div class="data-table">
+<h2>📊 最新數據</h2>
+<table id="dataTable">
+<tr>
+<th>企業</th>
+<th>最新 CapEx</th>
+<th>股價</th>
+<th>YoY 變化</th>
+</tr>
+<tr>
+<td>輝達</td>
+<td>$6.04B</td>
+<td>$207.83</td>
+<td class="positive">+86.7%</td>
+</tr>
+<tr>
+<td>Google</td>
+<td>$91.45B</td>
+<td>$398.04</td>
+<td class="positive">+74.1%</td>
+</tr>
+<tr>
+<td>Tesla</td>
+<td>$8.53B</td>
+<td>$398.73</td>
+<td class="negative">-24.8%</td>
+</tr>
+<tr>
+<td>美光</td>
+<td>$15.86B</td>
+<td>$666.59</td>
+<td class="positive">+89.1%</td>
+</tr>
+<tr>
+<td>台積電</td>
+<td>$1282.60B</td>
+<td>$2310.0</td>
+<td class="positive">+32.9%</td>
+</tr>
+<tr>
+<td>華邦電</td>
+<td>$6.87B</td>
+<td>$114.0</td>
+<td class="negative">-60.8%</td>
+</tr>
+<tr>
+<td>日月光</td>
+<td>$1.38B</td>
+<td>$71.4</td>
+<td class="negative">-9.2%</td>
+</tr>
+</table>
+</div>
+</div>
+
+<div class="footer">
+<p>數據來源：Yahoo Finance | 僅供參考，不構成投資建議</p>
+</div>
+
+<script>
+const chartData = {"NVDA": {"name": "\u8f1d\u9054", "currency": "USD", "years": [2026, 2025, 2024, 2023, 2022], "values": [6.04, 3.24, 1.07, 1.83, NaN]}, "GOOGL": {"name": "Google", "currency": "USD", "years": [2025, 2024, 2023, 2022, 2021], "values": [91.45, 52.54, 32.25, 31.48, NaN]}, "TSLA": {"name": "Tesla", "currency": "USD", "years": [2025, 2024, 2023, 2022, 2021], "values": [8.53, 11.34, 8.9, 7.17, NaN]}, "MU": {"name": "\u7f8e\u5149", "currency": "USD", "years": [2025, 2024, 2023, 2022, 2021], "values": [15.86, 8.39, 7.68, 12.07, NaN]}, "2330.TW": {"name": "\u53f0\u7a4d\u96fb", "currency": "TWD", "years": [2025, 2024, 2023, 2022, 2021], "values": [1282.6, 964.98, 955.4, 1089.63, NaN]}, "2344.TW": {"name": "\u83ef\u90a6\u96fb", "currency": "TWD", "years": [2025, 2024, 2023, 2022, 2021], "values": [6.87, 17.53, 14.12, 42.55, NaN]}, "3714.TW": {"name": "\u65e5\u6708\u5149", "currency": "TWD", "years": [2025, 2024, 2023, 2022, 2021], "values": [1.38, 1.52, 2.21, 4.45, NaN]}};
+
+let myChart = null;
+
+function updateChart() {
+    const code = document.getElementById('stockSelect').value;
+    const stock = chartData[code];
+    
+    if (myChart) myChart.destroy();
+    
+    const ctx = document.getElementById('capexChart').getContext('2d');
+    myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: stock.years,
+            datasets: [{
+                label: stock.name + ' CapEx (Billion)',
+                data: stock.values,
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102,126,234,0.3)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { labels: { color: '#fff' } }
+            },
+            scales: {
+                y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+            }
+        }
+    });
+}
+
+updateChart();
+</script>
+</body>
+</html>
