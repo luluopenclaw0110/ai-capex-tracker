@@ -10,92 +10,49 @@
 body { font-family: 'Microsoft JhengHei', sans-serif; background: #0f0c29; color: #fff; min-height: 100vh; padding: 20px; }
 .header { background: linear-gradient(135deg, #667eea, #764ba2); padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; }
 .header h1 { font-size: 2rem; margin-bottom: 10px; }
-.header p { color: rgba(255,255,255,0.8); }
-.container { max-width: 1200px; margin: 0 auto; }
-.controls { text-align: center; margin-bottom: 30px; }
-select { padding: 10px 20px; font-size: 1rem; border-radius: 10px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+.header p { color: rgba(255,255,255,0.8); font-size: 0.95rem; }
+.container { max-width: 1400px; margin: 0 auto; }
 .chart-container { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; margin-bottom: 30px; }
 .chart-container h2 { margin-bottom: 20px; color: #ffd700; }
-canvas { max-height: 400px; }
-.data-table { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; }
-table { width: 100%; border-collapse: collapse; }
-th, td { padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-th { background: rgba(102,126,234,0.5); color: #fff; }
+canvas { max-height: 450px; }
+.data-table { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; overflow-x: auto; }
+.data-table h2 { margin-bottom: 20px; color: #ffd700; }
+table { width: 100%; border-collapse: collapse; min-width: 900px; }
+th, td { padding: 10px 8px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; }
+th { background: rgba(102,126,234,0.5); color: #fff; position: sticky; top: 0; white-space: nowrap; }
+.year-header { background: rgba(102,126,234,0.3) !important; }
+.current-col { background: rgba(255,215,0,0.15) !important; color: #ffd700; font-weight: bold; }
 .positive { color: #00d26a; }
 .negative { color: #e94560; }
-.footer { text-align: center; margin-top: 40px; color: rgba(255,255,255,0.5); }
+.legend { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 15px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.85rem; }
+.legend-color { width: 14px; height: 14px; border-radius: 3px; }
+.footer { text-align: center; margin-top: 40px; color: rgba(255,255,255,0.5); font-size: 0.85rem; }
 </style>
 </head>
 <body>
 <div class="header">
 <h1>💰 AI 相關企業資本支出 (CapEx) 追蹤</h1>
-<p>追蹤輝達、Google、Tesla、美光、台積電等主要 AI 供應鏈資本支出變化</p>
-<p>更新時間: 2026-05-07 13:56</p>
+<p>追蹤輝達、Google、Tesla、美光、台積電等主要 AI 供應鏈資本支出變化 | 更新: 2026-05-07 14:02</p>
 </div>
 
 <div class="container">
-<div class="controls">
-<select id="stockSelect" onchange="updateChart()">
-<option value="NVDA">輝達</option><option value="GOOGL">Google</option><option value="TSLA">Tesla</option><option value="MU">美光</option><option value="2330.TW">台積電</option><option value="2344.TW">華邦電</option><option value="3714.TW">日月光</option>
-</select>
-</div>
-
 <div class="chart-container">
-<h2>📈 資本支出趨勢圖</h2>
-<canvas id="capexChart"></canvas>
+<h2>📊 各企業 CapEx 對比圖（十億美元）</h2>
+<canvas id="groupedChart"></canvas>
+<div class="legend" id="chartLegend"></div>
 </div>
 
 <div class="data-table">
-<h2>📊 最新數據</h2>
-<table id="dataTable">
-<tr>
+<h2>📈 歷年 CapEx 數據（十億美元）</h2>
+<table>
+<thead>
+<tr id="tableHeader">
 <th>企業</th>
-<th>最新 CapEx</th>
-<th>股價</th>
-<th>YoY 變化</th>
 </tr>
-<tr>
-<td>輝達</td>
-<td>$6.04B</td>
-<td>$207.83</td>
-<td class="positive">+86.7%</td>
-</tr>
-<tr>
-<td>Google</td>
-<td>$91.45B</td>
-<td>$398.04</td>
-<td class="positive">+74.1%</td>
-</tr>
-<tr>
-<td>Tesla</td>
-<td>$8.53B</td>
-<td>$398.73</td>
-<td class="negative">-24.8%</td>
-</tr>
-<tr>
-<td>美光</td>
-<td>$15.86B</td>
-<td>$666.59</td>
-<td class="positive">+89.1%</td>
-</tr>
-<tr>
-<td>台積電</td>
-<td>$1282.60B</td>
-<td>$2310.0</td>
-<td class="positive">+32.9%</td>
-</tr>
-<tr>
-<td>華邦電</td>
-<td>$6.87B</td>
-<td>$114.0</td>
-<td class="negative">-60.8%</td>
-</tr>
-<tr>
-<td>日月光</td>
-<td>$1.38B</td>
-<td>$71.4</td>
-<td class="negative">-9.2%</td>
-</tr>
+</thead>
+<tbody id="tableBody">
+</tbody>
 </table>
 </div>
 </div>
@@ -105,44 +62,141 @@ th { background: rgba(102,126,234,0.5); color: #fff; }
 </div>
 
 <script>
-const chartData = {"NVDA": {"name": "\u8f1d\u9054", "currency": "USD", "years": [2022, 2023, 2024, 2025, 2026], "values": [NaN, 1.83, 1.07, 3.24, 6.04]}, "GOOGL": {"name": "Google", "currency": "USD", "years": [2021, 2022, 2023, 2024, 2025], "values": [NaN, 31.48, 32.25, 52.54, 91.45]}, "TSLA": {"name": "Tesla", "currency": "USD", "years": [2021, 2022, 2023, 2024, 2025], "values": [NaN, 7.17, 8.9, 11.34, 8.53]}, "MU": {"name": "\u7f8e\u5149", "currency": "USD", "years": [2021, 2022, 2023, 2024, 2025], "values": [NaN, 12.07, 7.68, 8.39, 15.86]}, "2330.TW": {"name": "\u53f0\u7a4d\u96fb", "currency": "TWD", "years": [2021, 2022, 2023, 2024, 2025], "values": [NaN, 1089.63, 955.4, 964.98, 1282.6]}, "2344.TW": {"name": "\u83ef\u90a6\u96fb", "currency": "TWD", "years": [2021, 2022, 2023, 2024, 2025], "values": [NaN, 42.55, 14.12, 17.53, 6.87]}, "3714.TW": {"name": "\u65e5\u6708\u5149", "currency": "TWD", "years": [2021, 2022, 2023, 2024, 2025], "values": [NaN, 4.45, 2.21, 1.52, 1.38]}};
+const years = ["2021", "2022", "2023", "2024", "2025", "2026"];
 
-let myChart = null;
+const chartData = [{"label": "\u8f1d\u9054", "data": [null, NaN, 1.83, 1.07, 3.24, 6.04], "backgroundColor": "rgba(255, 99, 132, 0.7)", "borderColor": "rgba(255, 99, 132, 1)", "borderWidth": 2, "borderRadius": 5}, {"label": "Google", "data": [NaN, 31.48, 32.25, 52.54, 91.45, null], "backgroundColor": "rgba(54, 162, 235, 0.7)", "borderColor": "rgba(54, 162, 235, 1)", "borderWidth": 2, "borderRadius": 5}, {"label": "Tesla", "data": [NaN, 7.17, 8.9, 11.34, 8.53, null], "backgroundColor": "rgba(255, 206, 86, 0.7)", "borderColor": "rgba(255, 206, 86, 1)", "borderWidth": 2, "borderRadius": 5}, {"label": "\u7f8e\u5149", "data": [NaN, 12.07, 7.68, 8.39, 15.86, null], "backgroundColor": "rgba(75, 192, 192, 0.7)", "borderColor": "rgba(75, 192, 192, 1)", "borderWidth": 2, "borderRadius": 5}, {"label": "\u53f0\u7a4d\u96fb", "data": [NaN, 1089.63, 955.4, 964.98, 1282.6, null], "backgroundColor": "rgba(153, 102, 255, 0.7)", "borderColor": "rgba(153, 102, 255, 1)", "borderWidth": 2, "borderRadius": 5}, {"label": "\u83ef\u90a6\u96fb", "data": [NaN, 42.55, 14.12, 17.53, 6.87, null], "backgroundColor": "rgba(255, 159, 64, 0.7)", "borderColor": "rgba(255, 159, 64, 1)", "borderWidth": 2, "borderRadius": 5}, {"label": "\u65e5\u6708\u5149", "data": [NaN, 4.45, 2.21, 1.52, 1.38, null], "backgroundColor": "rgba(199, 199, 199, 0.7)", "borderColor": "rgba(199, 199, 199, 1)", "borderWidth": 2, "borderRadius": 5}];
 
-function updateChart() {
-    const code = document.getElementById('stockSelect').value;
-    const stock = chartData[code];
+const companyData = {"NVDA": {"name": "\u8f1d\u9054", "history": {"2022": NaN, "2023": 1.83, "2024": 1.07, "2025": 3.24, "2026": 6.04}, "latest": 6.04, "yoy": 86.41975308641973}, "GOOGL": {"name": "Google", "history": {"2021": NaN, "2022": 31.48, "2023": 32.25, "2024": 52.54, "2025": 91.45}, "latest": 91.45, "yoy": 74.05786067757899}, "TSLA": {"name": "Tesla", "history": {"2021": NaN, "2022": 7.17, "2023": 8.9, "2024": 11.34, "2025": 8.53}, "latest": 8.53, "yoy": -24.779541446208118}, "MU": {"name": "\u7f8e\u5149", "history": {"2021": NaN, "2022": 12.07, "2023": 7.68, "2024": 8.39, "2025": 15.86}, "latest": 15.86, "yoy": 89.03456495828365}, "2330.TW": {"name": "\u53f0\u7a4d\u96fb", "history": {"2021": NaN, "2022": 1089.63, "2023": 955.4, "2024": 964.98, "2025": 1282.6}, "latest": 1282.6, "yoy": 32.91467180666955}, "2344.TW": {"name": "\u83ef\u90a6\u96fb", "history": {"2021": NaN, "2022": 42.55, "2023": 14.12, "2024": 17.53, "2025": 6.87}, "latest": 6.87, "yoy": -60.81003993154592}, "3714.TW": {"name": "\u65e5\u6708\u5149", "history": {"2021": NaN, "2022": 4.45, "2023": 2.21, "2024": 1.52, "2025": 1.38}, "latest": 1.38, "yoy": -9.210526315789481}};
+
+// 動態生成表格頭
+const headerRow = document.getElementById('tableHeader');
+years.forEach(year => {
+    const th = document.createElement('th');
+    th.className = 'year-header';
+    th.textContent = year + '年';
+    th.setAttribute('colspan', '2');
+    headerRow.appendChild(th);
+});
+
+// 新增最新欄
+const thLatest = document.createElement('th');
+thLatest.className = 'current-col';
+thLatest.textContent = '最新';
+thLatest.setAttribute('colspan', '2');
+headerRow.appendChild(thLatest);
+
+// 生成表格
+const tbody = document.getElementById('tableBody');
+const colorMap = {
+    0: 'rgb(255, 99, 132)',
+    1: 'rgb(54, 162, 235)',
+    2: 'rgb(255, 206, 86)',
+    3: 'rgb(75, 192, 192)',
+    4: 'rgb(153, 102, 255)',
+    5: 'rgb(255, 159, 64)',
+    6: 'rgb(199, 199, 199)',
+};
+
+let idx = 0;
+for (const [code, co] of Object.entries(companyData)) {
+    const tr = document.createElement('tr');
     
-    if (myChart) myChart.destroy();
+    const tdName = document.createElement('td');
+    tdName.style.fontWeight = 'bold';
+    tdName.style.color = colorMap[idx % 7];
+    tdName.textContent = co.name;
+    tr.appendChild(tdName);
     
-    const ctx = document.getElementById('capexChart').getContext('2d');
-    myChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: stock.years,
-            datasets: [{
-                label: stock.name + ' CapEx (Billion)',
-                data: stock.values,
-                borderColor: '#667eea',
-                backgroundColor: 'rgba(102,126,234,0.3)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { labels: { color: '#fff' } }
-            },
-            scales: {
-                y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+    years.forEach(year => {
+        const value = co.history[year];
+        if (value !== undefined) {
+            const tdVal = document.createElement('td');
+            tdVal.textContent = '$' + value.toFixed(2) + 'B';
+            tr.appendChild(tdVal);
+            
+            const yearIdx = years.indexOf(year);
+            if (yearIdx > 0) {
+                const prevYear = years[yearIdx - 1];
+                const prevVal = co.history[prevYear];
+                const tdYoy = document.createElement('td');
+                if (prevVal && prevVal !== 0) {
+                    const yoy = (value - prevVal) / prevVal * 100;
+                    tdYoy.className = yoy >= 0 ? 'positive' : 'negative';
+                    tdYoy.textContent = (yoy >= 0 ? '+' : '') + yoy.toFixed(1) + '%';
+                } else {
+                    tdYoy.textContent = '-';
+                }
+                tr.appendChild(tdYoy);
+            } else {
+                const tdYoy = document.createElement('td');
+                tdYoy.textContent = '-';
+                tr.appendChild(tdYoy);
             }
+        } else {
+            const tdVal = document.createElement('td');
+            tdVal.style.color = 'rgba(255,255,255,0.3)';
+            tdVal.textContent = '-';
+            tr.appendChild(tdVal);
+            tr.appendChild(document.createElement('td'));
         }
     });
+    
+    // 最新
+    const tdLatest = document.createElement('td');
+    tdLatest.className = 'current-col';
+    tdLatest.textContent = '$' + co.latest.toFixed(2) + 'B';
+    tr.appendChild(tdLatest);
+    
+    // YoY
+    const tdYoy = document.createElement('td');
+    tdYoy.className = co.yoy >= 0 ? 'positive' : 'negative';
+    tdYoy.textContent = (co.yoy >= 0 ? '+' : '') + co.yoy.toFixed(1) + '%';
+    tr.appendChild(tdYoy);
+    
+    tbody.appendChild(tr);
+    idx++;
 }
 
-updateChart();
+// 繪製圖表
+const ctx = document.getElementById('groupedChart').getContext('2d');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: years.map(y => y + '年'),
+        datasets: chartData
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' },
+                title: {
+                    display: true,
+                    text: 'CapEx (十億美元)',
+                    color: '#fff'
+                }
+            },
+            x: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+            }
+        }
+    }
+});
+
+// 圖例
+const legendContainer = document.getElementById('chartLegend');
+Object.entries(companyData).forEach(([code, co], i) => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = '<div class="legend-color" style="background:' + colorMap[i % 7] + '"></div><span>' + co.name + '</span>';
+    legendContainer.appendChild(item);
+});
 </script>
 </body>
 </html>
